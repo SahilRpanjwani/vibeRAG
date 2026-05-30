@@ -1,0 +1,27 @@
+fastapi
+uvicorn[standard]
+python-dotenv
+
+# LangChain
+langchain
+langchain-google-genai
+langchain-community
+langchain-chroma
+
+# Embeddings
+sentence-transformers
+
+# Vector DB
+chromadb
+
+# Transcripts
+youtube-transcript-api
+yt-dlp
+
+# Metadata / scraping
+httpx
+beautifulsoup4
+instaloader
+
+# Streaming
+sse-starlette
