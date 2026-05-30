@@ -1,0 +1,18 @@
+# IDE / Editor
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Python
+__pycache__/
+*.py[cod]
+*.so
+venv/
+.env
+chroma_db/
+
+# Frontend
+node_modules/
+.env.local
+.DS_Store
