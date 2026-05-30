@@ -4,6 +4,7 @@ from pydantic import BaseModel
 from services.rag import stream_ask, clear_session
 from routers.ingest import video_store
 import json
+import asyncio
 
 router = APIRouter()
 
@@ -22,20 +23,31 @@ async def chat(request: ChatRequest):
         )
 
     async def generate():
-        citations_sent = False
         full_answer = ""
+        citations = []
 
-        for chunk in stream_ask(
-            session_id=request.session_id,
-            question=request.question,
-            video_metadata=video_store,
-        ):
-            full_answer += chunk
-            # Stream answer chunks as SSE
-            yield f"data: {json.dumps({'type': 'token', 'content': chunk})}\n\n"
+        loop = asyncio.get_event_loop()
+        from concurrent.futures import ThreadPoolExecutor
 
-        # Send citations at the end
-        yield f"data: {json.dumps({'type': 'done', 'content': full_answer})}\n\n"
+        chunks = []
+        with ThreadPoolExecutor() as pool:
+            result = await loop.run_in_executor(
+                pool,
+                lambda: list(stream_ask(
+                    session_id=request.session_id,
+                    question=request.question,
+                    video_metadata=video_store,
+                ))
+            )
+
+        for chunk in result:
+            if isinstance(chunk, dict) and chunk.get("type") == "citations":
+                citations = chunk["citations"]
+            else:
+                full_answer += chunk
+                yield f"data: {json.dumps({'type': 'token', 'content': chunk})}\n\n"
+
+        yield f"data: {json.dumps({'type': 'done', 'content': full_answer, 'citations': citations})}\n\n"
 
     return StreamingResponse(
         generate(),
@@ -43,9 +55,10 @@ async def chat(request: ChatRequest):
         headers={
             "Cache-Control": "no-cache",
             "X-Accel-Buffering": "no",
+            "Access-Control-Allow-Origin": "http://localhost:5173",
+            "Access-Control-Allow-Credentials": "true",
         }
     )
-
 
 @router.delete("/chat/{session_id}")
 async def clear_chat(session_id: str):

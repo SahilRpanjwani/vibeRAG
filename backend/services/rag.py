@@ -131,9 +131,6 @@ def clear_session(session_id: str):
 
 
 def stream_ask(session_id: str, question: str, video_metadata: dict):
-    """
-    Streaming version — yields answer chunks.
-    """
     vectorstore = get_vectorstore()
     retriever = vectorstore.as_retriever(search_kwargs={"k": 4})
 
@@ -165,6 +162,17 @@ def stream_ask(session_id: str, question: str, video_metadata: dict):
         full_answer += chunk
         yield chunk
 
-    # Save to memory after streaming completes
+    # Save to memory
     history.append(HumanMessage(content=question))
     history.append(AIMessage(content=full_answer))
+
+    # Yield citations as final item
+    citations = [
+        {
+            "video_id": doc.metadata.get("video_id"),
+            "chunk_index": doc.metadata.get("chunk_index"),
+            "text_preview": doc.page_content[:120],
+        }
+        for doc in docs
+    ]
+    yield {"type": "citations", "citations": citations}

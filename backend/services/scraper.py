@@ -50,41 +50,59 @@ def scrape_youtube(url: str) -> dict:
 
 
 def scrape_instagram(url: str) -> dict:
-    ydl_opts = {
-        "quiet": True,
-        "skip_download": True,
-        "cookiefile": None,
-    }
+    try:
+        ydl_opts = {
+            "quiet": True,
+            "skip_download": True,
+        }
 
-    with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-        info = ydl.extract_info(url, download=False)
+        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+            info = ydl.extract_info(url, download=False)
 
-    # Instagram often doesn't return like/comment counts without auth
-    likes = info.get("like_count") or 0
-    comments = info.get("comment_count") or 0
-    views = info.get("view_count") or 0
+        likes = info.get("like_count") or 0
+        comments = info.get("comment_count") or 0
+        views = info.get("view_count") or 0
+        transcript = info.get("description") or ""
 
-    # No transcript API for Instagram — we'll handle via Whisper later
-    # For now return metadata only, transcript will be empty string
-    transcript = info.get("description") or ""
+        return {
+            "platform": "instagram",
+            "video_id": info.get("id"),
+            "url": url,
+            "title": info.get("title") or info.get("description", "")[:80],
+            "creator": info.get("uploader") or info.get("channel"),
+            "channel_url": info.get("channel_url") or "",
+            "follower_count": info.get("channel_follower_count") or 0,
+            "views": views,
+            "likes": likes,
+            "comments": comments,
+            "duration": info.get("duration"),
+            "upload_date": info.get("upload_date"),
+            "hashtags": info.get("tags") or [],
+            "engagement_rate": compute_engagement_rate(likes, comments, views),
+            "transcript": transcript,
+        }
 
-    return {
-        "platform": "instagram",
-        "video_id": info.get("id"),
-        "url": url,
-        "title": info.get("title") or info.get("description", "")[:80],
-        "creator": info.get("uploader") or info.get("channel"),
-        "channel_url": info.get("channel_url") or "",
-        "follower_count": info.get("channel_follower_count") or 0,
-        "views": views,
-        "likes": likes,
-        "comments": comments,
-        "duration": info.get("duration"),
-        "upload_date": info.get("upload_date"),
-        "hashtags": info.get("tags") or [],
-        "engagement_rate": compute_engagement_rate(likes, comments, views),
-        "transcript": transcript,
-    }
+    except Exception as e:
+        print(f"Instagram scrape failed: {e}")
+        # Return a placeholder so the app doesn't crash
+        video_id = url.split("/reel/")[-1].split("/")[0] if "/reel/" in url else "unknown"
+        return {
+            "platform": "instagram",
+            "video_id": video_id,
+            "url": url,
+            "title": "Instagram Reel (login required)",
+            "creator": "Unknown",
+            "channel_url": "",
+            "follower_count": 0,
+            "views": 0,
+            "likes": 0,
+            "comments": 0,
+            "duration": 0,
+            "upload_date": "N/A",
+            "hashtags": [],
+            "engagement_rate": 0.0,
+            "transcript": "This Instagram Reel requires authentication to access. Metadata could not be retrieved.",
+        }
 
 
 def scrape_video(url: str, video_label: str) -> dict:

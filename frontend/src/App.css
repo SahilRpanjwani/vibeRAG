@@ -387,3 +387,19 @@ body {
   text-decoration: none;
   font-size: 0.85rem;
 }
+.citations {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-top: 0.5rem;
+  padding-left: 0.5rem;
+}
+
+.citation-chip {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 0.2rem 0.6rem;
+  font-size: 0.72rem;
+  color: var(--accent);
+}
