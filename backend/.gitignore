@@ -1,0 +1,25 @@
+# Env
+.env
+*.env
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+
+# ChromaDB local storage
+backend/chroma_db/
+
+# Node
+node_modules/
+dist/
+.next/
+
+# PyCharm
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
