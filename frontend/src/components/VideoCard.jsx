@@ -19,22 +19,46 @@ export default function VideoCard({ label, video, loading }) {
     );
   }
 
-  const embedUrl = video.platform === "youtube"
-    ? `https://www.youtube.com/embed/${video.video_id}`
-    : null;
+const embedUrl = video.platform === "youtube"
+  ? `https://www.youtube.com/embed/${video.video_id}`
+  : null;
+
+const thumbnailUrl = video.platform === "instagram"
+  ? `https://www.instagram.com/p/${video.video_id}/media/?size=l`
+  : null;
 
   return (
     <div className="video-card">
       <div className="card-label">Video {label}</div>
 
-      {embedUrl && (
-        <iframe
-          src={embedUrl}
-          title={video.title}
-          allowFullScreen
-          className="video-embed"
-        />
-      )}
+{embedUrl && (
+  <iframe
+    src={embedUrl}
+    title={video.title}
+    allowFullScreen
+    className="video-embed"
+  />
+)}
+
+{!embedUrl && thumbnailUrl && (
+  <div className="instagram-thumb">
+    <img
+      src={thumbnailUrl}
+      alt={video.title}
+      className="video-embed"
+      style={{ objectFit: "cover" }}
+      onError={(e) => {
+        e.target.style.display = "none";
+        e.target.nextSibling.style.display = "flex";
+      }}
+    />
+    <div className="instagram-fallback" style={{ display: "none" }}>
+      <span>📸</span>
+      <p>Instagram Reel</p>
+      <a href={video.url} target="_blank" rel="noreferrer">Open on Instagram ↗</a>
+    </div>
+  </div>
+)}
 
       <div className="video-info">
         <h3 className="video-title">{video.title}</h3>

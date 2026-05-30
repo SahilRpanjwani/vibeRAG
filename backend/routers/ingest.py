@@ -32,12 +32,14 @@ async def ingest_videos(request: IngestRequest):
         video_a = scrape_video(request.url_a, "A")
         video_b = scrape_video(request.url_b, "B")
 
-        # Chunk and embed transcripts
+        # Chunk and embed — skip if transcript is empty
         chunks_a = chunk_transcript(video_a["transcript"], "A")
-        chunks_b = chunk_transcript(video_b["transcript"], "B")
+        if chunks_a:
+            embed_and_store(chunks_a, video_a)
 
-        embed_and_store(chunks_a, video_a)
-        embed_and_store(chunks_b, video_b)
+        chunks_b = chunk_transcript(video_b["transcript"], "B")
+        if chunks_b:
+            embed_and_store(chunks_b, video_b)
 
         # Store metadata for chat router to use
         video_store["A"] = {k: v for k, v in video_a.items() if k != "transcript"}
