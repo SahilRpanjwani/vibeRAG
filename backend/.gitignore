@@ -24,4 +24,4 @@ dist/
 .DS_Store
 Thumbs.db
 
-backend/cookies.txt
+cookies.txt

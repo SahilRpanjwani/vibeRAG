@@ -16,3 +16,5 @@ chroma_db/
 node_modules/
 .env.local
 .DS_Store
+
+backend/cookies.txt
