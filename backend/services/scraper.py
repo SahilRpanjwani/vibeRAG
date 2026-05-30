@@ -6,10 +6,21 @@ from utils.metadata import compute_engagement_rate
 
 def extract_youtube_id(url: str) -> str:
     parsed = urlparse(url)
+
+    # Handle youtu.be short links
     if parsed.hostname in ("youtu.be",):
         return parsed.path[1:]
-    if parsed.hostname in ("www.youtube.com", "youtube.com"):
-        return parse_qs(parsed.query).get("v", [None])[0]
+
+    # Handle YouTube Shorts
+    if "/shorts/" in parsed.path:
+        return parsed.path.split("/shorts/")[-1].split("?")[0]
+
+    # Handle regular youtube.com/watch?v=
+    if parsed.hostname in ("www.youtube.com", "youtube.com", "m.youtube.com"):
+        video_id = parse_qs(parsed.query).get("v", [None])[0]
+        if video_id:
+            return video_id
+
     raise ValueError(f"Invalid YouTube URL: {url}")
 
 
