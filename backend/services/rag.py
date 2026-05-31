@@ -46,6 +46,14 @@ You have access to transcripts and metadata for two videos labeled A and B.
 Always cite which video (A or B) and which part of the transcript you're referencing.
 Be specific, data-driven, and actionable in your responses.
 
+IMPORTANT RULES:
+- Engagement rate is already computed as (likes + comments) / views * 100. Never recalculate it.
+- Always use the engagement_rate value from metadata directly.
+- If views are 0, state engagement rate cannot be computed due to restricted view data.
+- Never calculate engagement rate using followers — only views.
+- When asked about hooks or the first few seconds, always reference chunk 0 of each video as that contains the opening content.
+- Chunk 0 is the beginning of the video transcript. Use it directly when asked about hooks or openings.
+
 Retrieved context from video transcripts:
 {context}
 
@@ -62,10 +70,13 @@ prompt = ChatPromptTemplate.from_messages([
 
 def format_docs(docs) -> str:
     formatted = []
-    for doc in docs:
+    # Sort so chunk 0 always appears first
+    sorted_docs = sorted(docs, key=lambda d: (d.metadata.get("video_id", ""), d.metadata.get("chunk_index", 99)))
+    for doc in sorted_docs:
         video_id = doc.metadata.get("video_id", "?")
         chunk_idx = doc.metadata.get("chunk_index", "?")
-        formatted.append(f"[Video {video_id}, Chunk {chunk_idx}]: {doc.page_content}")
+        label = "OPENING/HOOK" if chunk_idx == 0 else f"Chunk {chunk_idx}"
+        formatted.append(f"[Video {video_id} - {label}]: {doc.page_content}")
     return "\n\n".join(formatted)
 
 
@@ -92,6 +103,35 @@ def ask(session_id: str, question: str, video_metadata: dict) -> dict:
 
     # Retrieve relevant chunks
     docs = retriever.invoke(question)
+
+    # For hook questions always include chunk 0 from both videos
+    hook_keywords = ["hook", "first", "opening", "start", "beginning", "seconds"]
+    if any(kw in question.lower() for kw in hook_keywords):
+        from langchain.schema import Document
+        collection = get_vectorstore()._collection
+        existing_ids = [d.metadata.get("chunk_index") == 0 and d.metadata.get("video_id") for d in docs]
+
+        for vid_id in ["A", "B"]:
+            # Only add if chunk 0 not already in results
+            already_included = any(
+                d.metadata.get("video_id") == vid_id and d.metadata.get("chunk_index") == 0
+                for d in docs
+            )
+            if not already_included:
+                try:
+                    result = collection.get(
+                        ids=[f"{vid_id}_0"],
+                        include=["documents", "metadatas"]
+                    )
+                    if result["documents"]:
+                        hook_doc = Document(
+                            page_content=result["documents"][0],
+                            metadata=result["metadatas"][0]
+                        )
+                        docs.append(hook_doc)
+                except:
+                    pass
+
     context = format_docs(docs)
     history = get_history(session_id)
 
@@ -146,7 +186,37 @@ def stream_ask(session_id: str, question: str, video_metadata: dict):
             f"duration={meta.get('duration', 'N/A')}s"
         )
 
+    # Retrieve relevant chunks
     docs = retriever.invoke(question)
+
+    # -------------------------------------------------
+    # Force-include chunk 0 for hook/first‑seconds questions
+    hook_keywords = ["hook", "first", "opening", "start", "beginning", "seconds"]
+    if any(kw in question.lower() for kw in hook_keywords):
+        from langchain_core.documents import Document  # ensure correct import
+        collection = vectorstore._collection
+
+        for vid_id in ["A", "B"]:
+            # skip if chunk 0 is already retrieved
+            already_included = any(
+                d.metadata.get("video_id") == vid_id and d.metadata.get("chunk_index") == 0
+                for d in docs
+            )
+            if not already_included:
+                try:
+                    result = collection.get(
+                        ids=[f"{vid_id}_0"],
+                        include=["documents", "metadatas"]
+                    )
+                    if result["documents"]:
+                        docs.append(Document(
+                            page_content=result["documents"][0],
+                            metadata=result["metadatas"][0]
+                        ))
+                except Exception:
+                    pass
+    # -------------------------------------------------
+
     context = format_docs(docs)
     history = get_history(session_id)
 
