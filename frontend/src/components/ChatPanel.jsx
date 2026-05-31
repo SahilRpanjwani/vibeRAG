@@ -61,12 +61,12 @@
         setMessages([]);
       };
 
-      const suggestions = [
-        "Why did Video A get more engagement than Video B?",
-        "Compare the hooks in the first 5 seconds",
-        "What's the engagement rate of each video?",
-        "Suggest improvements for B based on what worked in A",
-      ];
+const suggestions = [
+    "Which video had better engagement and why?",
+    "Compare the hooks in the first 5 seconds",
+    "What's the engagement rate of each video?",
+    "How can the lower performing video improve?",
+];
 
       return (
         <div className="chat-panel">

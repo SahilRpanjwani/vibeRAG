@@ -48,7 +48,7 @@ export default function App() {
       <section className="url-section">
         <div className="url-inputs">
           <div className="url-field">
-            <label>Video A — YouTube</label>
+            <label>Video A — YouTube / Instagram</label>
             <input
               type="text"
               value={urlA}
@@ -58,7 +58,7 @@ export default function App() {
             />
           </div>
           <div className="url-field">
-            <label>Video B — Instagram Reel</label>
+            <label>Video B — YouTube / Instagram</label>
             <input
               type="text"
               value={urlB}
