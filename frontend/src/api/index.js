@@ -1,7 +1,9 @@
 import axios from "axios";
 
+const BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
+
 const API = axios.create({
-  baseURL: "http://localhost:8000/api",
+  baseURL: `${BASE_URL}/api`,
 });
 
 export const ingestVideos = (urlA, urlB) =>
@@ -11,7 +13,7 @@ export const clearSession = (sessionId) =>
   API.delete(`/chat/${sessionId}`);
 
 export const streamChat = (sessionId, question, onToken, onDone) => {
-  fetch("http://localhost:8000/api/chat", {
+  fetch(`${BASE_URL}/api/chat`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ session_id: sessionId, question }),

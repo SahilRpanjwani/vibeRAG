@@ -25,3 +25,7 @@ instaloader
 
 # Streaming
 sse-starlette
+
+langchain-groq
+langchain-huggingface
+langchain-text-splitters
