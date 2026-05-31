@@ -76,9 +76,24 @@ Open `http://localhost:5173`
 3. Hit Analyze Videos — wait ~15-20s for scraping + embedding
 4. Ask anything in the chat
 
+## Hosting
+
+Frontend: https://viberag-frontend.onrender.com
+Backend: https://mrw4lk3r-viberag-backend.hf.space
+
+Note: YouTube transcript and metadata scraping is blocked by YouTube when running from cloud provider IPs (AWS, GCP, etc.) — this is a known platform restriction affecting all free hosting tiers. The app works fully when run locally as shown in the Loom. Production fix would be residential proxies or the official YouTube Data API v3.
+
+Instagram metadata (views, follower count) is restricted without official Graph API access. Likes and comments come through via yt-dlp. Production fix: Instagram Graph API or Apify.
+
+
 ## NOTE
-I made it in 2 days — 1 day for building the entire program and running it, and the second day for extra checks and hosting. At first everything worked fine, but then I hit a known Gemini issue: they have started rate limiting way harder than before, and the application stopped working. I looked for other options and came across Groq. It has higher limits and great quality, a perfect replacement for Gemini. After getting an API key from GroqCloud, it sailed smoothly. I kept committing after solving each issue and making updates.
+I built vibeRAG in 2 days — one day for coding and running the whole program, the second for extra checks and hosting. At first everything worked, but then I hit a known Gemini issue: they've started rate limiting much harder than before, and the app stopped working. I found Groq as an alternative — higher limits, great quality, a perfect replacement. After grabbing an API key from GroqCloud, everything sailed smoothly. I kept committing after solving each issue and making updates.
 
-At the start I had no idea about LangChain, so I used NotebookLM to compile a lot of sources — a whole playlist of hours‑long YouTube videos and multiple websites — and learned from them much more easily and faster. I also used Claude and DeepSeek simultaneously. If I got stuck in Claude or needed an explanation, I'd copy the code or error over to DeepSeek. That way I preserved my rate limit in Claude and still understood the code the same way. Sometimes errors are long, so instead of asking Claude to explain them, I'd go to DeepSeek to break down the error and track it down myself. Then I'd ask Claude for the best ways to solve it. Occasionally I'd even go to YouTube to see how professionals work through something or pinpoint a specific issue.
+I started with zero knowledge of LangChain, so I used NotebookLM to compile a ton of sources — a whole playlist of hours‑long YouTube videos and multiple websites — and learned from them much more easily and faster. I also used Claude and DeepSeek side‑by‑side. If I got stuck in Claude or needed a deeper explanation, I'd copy the code or error over to DeepSeek. That way I preserved my rate limit in Claude and still understood the code just as well. Sometimes errors are long, so instead of using Claude to explain them, I'd go to DeepSeek to break down the error and trace it myself. Then I'd ask Claude for the best ways to solve it. Occasionally I'd even go to YouTube to see how professionals work through something or pinpoint a specific issue.
 
-Copy‑pasting from AI is easy, but it won't pinpoint your error. You have to know what you did and where it broke — only you can really trace it. That's one thing I'm proud of that I can do that. 
+Copy‑pasting from AI is easy, but it won't find your bug. You have to know what you did and where it broke — only you can really trace it. That's one thing I'm proud of: I can do that.
+
+The most painstaking work was trying to get Instagram to give more details and information about the Reels. Every free option gave very little data; all the fuller solutions were paid, as I mentioned in my Loom video.
+
+Hosting was simpler but time‑consuming. Leftover commits, uncommitted docs, etc. Even after sorting those, it couldn't fully go through because YouTube doesn't allow transcript and metadata scraping from free‑tier hosted sites, and I don't have the budget for a paid host. I even tried Hugging Face Spaces for the backend (since Render only gives ~512 MB storage and I needed more — Hugging Face gives about 16 GB). I created an account, hosted the backend there, and put the frontend on Render. I thought it was perfect, until I got hit with YouTube's restrictions. At least it all still works perfectly locally.
+
